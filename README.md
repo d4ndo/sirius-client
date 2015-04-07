@@ -1,5 +1,7 @@
 # sirius-client
 A unix command like sirius client
 
+Requires:
 
-requires libpcre
+* libpcre
+* libcurl
