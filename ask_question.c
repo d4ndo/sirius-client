@@ -10,7 +10,7 @@ int ask_question(char *url, unsigned char *question, char **answer) {
 
     CURL *curl_handle;
     CURLcode res;
-    
+
     char *modified_url = NULL;
     struct MemoryStruct chunk;
 
@@ -42,9 +42,9 @@ int ask_question(char *url, unsigned char *question, char **answer) {
 
 static char *getRequest(char *url, unsigned char *question)
 {
-    char *buffer;
-    char query[] = "?query=\0";
-    
+    char *buffer = NULL;
+    char query[] = QUERY;
+
     pcrs_job *job;
     char pattern[] = "s/\\s/%20/g";
     char *request_question;
@@ -61,7 +61,7 @@ static char *getRequest(char *url, unsigned char *question)
     {
         fprintf(stderr, "Exec error:  %s (%d)\n", pcrs_strerror(err), err);
         exit(EXIT_FAILURE);
-    } 
+    }
 
     buffer = (char *)malloc(8 * MAX_DATA_SIZE);
     if(buffer == NULL) {
