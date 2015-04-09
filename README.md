@@ -17,13 +17,17 @@ echo What is the speed of light | sirius
 ```
 
 ## Speech recognition
--a : sirius will return the content of speech.wav
+-a : sirius will return the content of `speech.wav`
 ```bash
 sirius -a speech.wav
 ```
 
--q : sirius will try to answer question.wav
+-q : sirius will try to answer `question.wav`
 ```bash
 sirius -qa question.wav
+```
+Equivalent to :
+```bash
+sirius -a question | sirius
 ```
 
