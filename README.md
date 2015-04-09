@@ -28,6 +28,6 @@ sirius -qa question.wav
 ```
 Equivalent to :
 ```bash
-sirius -a question | sirius
+sirius -a question.wav | sirius
 ```
 
