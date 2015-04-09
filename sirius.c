@@ -5,24 +5,29 @@
 #include <string.h>
 #include <errno.h>
 #include "ask_question.h"
+#include "speech_recognition.h"
 #include "globaldefs.h"
 
 static int verbose = 0;
 static const struct option options[] = {
 	{"help"         , no_argument      , NULL, 'h'},
+        {"speechrecog"  , required_argument, NULL, 'a'},
+        {"question"     , no_argument      , NULL, 'q'},
         {"url"          , required_argument, NULL, 'u'},
         {"version"      , no_argument      , NULL, 'v'},
 	{"verbose"      , no_argument      , &verbose, 1},
 	{NULL, 0, NULL, 0}
 };
 
-static char *optstring = "hu:v";
+static char *optstring = "ha:qu:v";
 static void usage(int status);
 static unsigned char *readStdin(int *length);
 
 int main(int argc, char **argv)
 {
     int opt, lindex = -1;
+    char *wavfile = NULL;
+    int q = 0;
     char *url = NULL;
     char *answer = NULL;
     unsigned char *question = NULL;
@@ -38,8 +43,14 @@ int main(int argc, char **argv)
 		}
 		exit(EXIT_SUCCESS);
                 break;
-	    case 'u':
-                url = optarg;
+	    case 'a':
+                wavfile = strndup(optarg, MAX_DATA_SIZE);
+                break;
+            case 'q':
+                q = 1;
+                break;
+            case 'u':
+                url = strndup(optarg, MAX_DATA_SIZE);
                 break;
             case 'v':
                 fprintf(stdout, "sirius Version %s\n", VERSION);
@@ -58,23 +69,42 @@ int main(int argc, char **argv)
         question = (unsigned char *)argv[optind];
         length = strlen((char *)question);
     }
-    
+
     if (url == NULL)
     {
-        char localhost[] = SIRIUS_URL;
-        url = (char *)malloc(MAX_DATA_SIZE + 1);
-        strcpy(url, localhost);
+        url = strndup(SIRIUS_URL, MAX_DATA_SIZE);
     }
-   
-    if (question == NULL)
-    { 
+
+    if (question == NULL && wavfile == NULL)
+    {
         question = readStdin(&length);
     }
 
     int ret = 0;
-    if (0 > (ret = ask_question(url, question, &answer))) {
-        fprintf(stderr, "Could not connect to host: %s\n", url);
-        exit(EXIT_FAILURE); 
+
+    if (wavfile != NULL)
+    {
+        /* Append SPEECH port to url */
+        char *urlport = calloc((strlen(SPEECH_PORT) + strlen(url) + 2), sizeof(char));
+        strncat(urlport, url, strlen(url));
+        strncat(urlport, SPEECH_PORT, strlen(SPEECH_PORT));
+        if (0 > (ret = speech_recog(urlport, wavfile, &answer))) {
+            fprintf(stderr, "Could not connect to host: %s\n", url);
+            exit(EXIT_FAILURE);
+        }
+        if (question != NULL) free(question);
+        if (q) question = strndup(answer, MAX_DATA_SIZE);
+    } 
+
+    if (question != NULL) {
+        /* Append QUESTION port to url */
+        char *urlport = calloc((strlen(QUESTION_PORT) + strlen(url) + 2), sizeof(char));
+        strncat(urlport, url, strlen(url));
+        strncat(urlport, QUESTION_PORT, strlen(QUESTION_PORT));
+        if (0 > (ret = ask_question(urlport, question, &answer))) {
+            fprintf(stderr, "Could not connect to host: %s\n", url);
+            exit(EXIT_FAILURE);
+        }
     }
 
     if (verbose)
@@ -96,7 +126,9 @@ static void usage(int status)
     "               If it is not specified, data will be\n"
     "               taken from standard input.\n\n"
     "  -a, --speechrecog [WAV FILE]\n"
-    "               WAV_FILE some voice audio file for sirius to recognice. NOT IMPLEMENTED\n\n"
+    "               WAV_FILE some voice audio file for sirius to recognice.\n\n"
+    "  -q, --question\n"
+    "               WAV_FILE is a question.\n\n"
     "  -i, --imagematch [IMAGE_FILE]\n"
     "               IMAGE_FILE some image file for sirius to match. NOT IMPLEMENTED\n\n"
     "  -u, --url [URL]\n"
