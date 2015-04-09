@@ -8,7 +8,7 @@ Requires:
 
 # Howto
 
-## Question
+## Asking a question
 To ask sirius a question try this:
 ```bash
 sirius "What is the speed of light"
@@ -30,4 +30,6 @@ Equivalent to :
 ```bash
 sirius -a question.wav | sirius
 ```
+## Image matching
 
+In work
