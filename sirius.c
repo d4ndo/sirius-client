@@ -6,6 +6,7 @@
 #include <errno.h>
 #include "ask_question.h"
 #include "speech_recognition.h"
+#include "image_matching.h"
 #include "globaldefs.h"
 
 static int verbose = 0;
@@ -13,13 +14,14 @@ static const struct option options[] = {
 	{"help"         , no_argument      , NULL, 'h'},
         {"speechrecog"  , required_argument, NULL, 'a'},
         {"question"     , no_argument      , NULL, 'q'},
+        {"imagematch"   , required_argument, NULL, 'i'},
         {"url"          , required_argument, NULL, 'u'},
         {"version"      , no_argument      , NULL, 'v'},
 	{"verbose"      , no_argument      , &verbose, 1},
 	{NULL, 0, NULL, 0}
 };
 
-static char *optstring = "ha:qu:v";
+static char *optstring = "ha:qi:u:v";
 static void usage(int status);
 static unsigned char *readStdin(int *length);
 
@@ -27,6 +29,7 @@ int main(int argc, char **argv)
 {
     int opt, lindex = -1;
     char *wavfile = NULL;
+    char *imgfile = NULL;
     int q = 0;
     char *url = NULL;
     char *answer = NULL;
@@ -48,6 +51,9 @@ int main(int argc, char **argv)
                 break;
             case 'q':
                 q = 1;
+                break;
+	    case 'i':
+                imgfile = strndup(optarg, MAX_DATA_SIZE);
                 break;
             case 'u':
                 url = strndup(optarg, MAX_DATA_SIZE);
@@ -94,7 +100,21 @@ int main(int argc, char **argv)
         }
         if (question != NULL) free(question);
         if (q) question = strndup(answer, MAX_DATA_SIZE);
+        free(urlport);
     } 
+
+    if (imgfile != NULL)
+    {
+        /* Append IMAGE matching PORT to url */
+        char *urlport = calloc((strlen(IMAGE_PORT) + strlen(url) + 2), sizeof(char));
+        strncat(urlport, url, strlen(url));
+        strncat(urlport, IMAGE_PORT, strlen(IMAGE_PORT));
+        if (0 > (ret = image_match(urlport, imgfile, &answer))) {
+            fprintf(stderr, "Could not connect to host: %s\n", url);
+            exit(EXIT_FAILURE);
+        }
+        free(urlport);
+    }
 
     if (question != NULL) {
         /* Append QUESTION port to url */
@@ -105,6 +125,7 @@ int main(int argc, char **argv)
             fprintf(stderr, "Could not connect to host: %s\n", url);
             exit(EXIT_FAILURE);
         }
+        free(urlport);
     }
 
     if (verbose)
@@ -130,7 +151,7 @@ static void usage(int status)
     "  -q, --question\n"
     "               WAV_FILE is a question.\n\n"
     "  -i, --imagematch [IMAGE_FILE]\n"
-    "               IMAGE_FILE some image file for sirius to match. NOT IMPLEMENTED\n\n"
+    "               IMAGE_FILE some image file for sirius to match.\n\n"
     "  -u, --url [URL]\n"
     "               URL from sirius host..\n\n"
     "  -c, --cert [CERTIFICATE_FILE]\n"
