@@ -9,8 +9,6 @@ Requires:
 
 Clone this repsitory: `git clone https://github.com/d4ndo/sirius-client.git`
 
-Then compile sirius-client:
-
 ```bash
 cd sirius-client
 mkdir build
