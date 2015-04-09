@@ -1,12 +1,28 @@
 # sirius-client
 A unix command like sirius client
+# Installing sirius
 
 Requires:
 
 * libpcre
 * libcurl
 
-# Howto
+Clone this ropsitory
+```bash
+git clone https://github.com/d4ndo/sirius-client.git
+```
+Compile sirius-client:
+
+```bash
+cd sirius-client
+mkdir build
+cd build
+cmake ../
+make
+sudo make install
+```
+
+# Getting started
 
 ## Asking a question
 To ask sirius a question try this:
