@@ -1,9 +1,13 @@
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
 #include <stdio.h>
 #include <curl/curl.h>
 #include <getopt.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include "./inih/ini.h"
 #include "ask_question.h"
 #include "speech_recognition.h"
 #include "image_matching.h"
@@ -24,9 +28,12 @@ static const struct option options[] = {
 static char *optstring = "ha:qi:u:v";
 static void usage(int status);
 static unsigned char *readStdin(int *length);
+static int handler(void *user, const char *section, 
+                   const char *name, const char *value);
 
 int main(int argc, char **argv)
 {
+    /* variables used and set by getopt */
     int opt, lindex = -1;
     char *wavfile = NULL;
     char *imgfile = NULL;
@@ -36,6 +43,23 @@ int main(int argc, char **argv)
     unsigned char *question = NULL;
     int length = 0;
 
+    /* get HOME directory from environment */
+    const char *homedir;
+    if ((homedir = getenv("HOME")) == NULL) {
+        homedir = getpwuid(getuid())->pw_dir;
+    }
+    /* see 21st Century C from Ben Klemens about strings */
+    char *ini = strndup(homedir, MAX_DATA_SIZE);
+    asprintf(&ini, "%s/.sirius.ini", ini);
+
+    /* parse config INI fie */
+    struct Config config;
+
+    if (ini_parse(ini, handler, &config) < 0) {
+        fprintf(stderr, "Can't load %s *\n", ini);
+        exit(EXIT_FAILURE);
+    }
+   
     while((opt = getopt_long(argc, argv, optstring, options, &lindex)) != -1) {
         switch(opt) {
             case 'h':
@@ -76,11 +100,6 @@ int main(int argc, char **argv)
         length = strlen((char *)question);
     }
 
-    if (url == NULL)
-    {
-        url = strndup(SIRIUS_URL, MAX_DATA_SIZE);
-    }
-
     if (question == NULL && wavfile == NULL)
     {
         question = readStdin(&length);
@@ -91,41 +110,47 @@ int main(int argc, char **argv)
     if (wavfile != NULL)
     {
         /* Append SPEECH port to url */
-        char *urlport = calloc((strlen(SPEECH_PORT) + strlen(url) + 2), sizeof(char));
-        strncat(urlport, url, strlen(url));
-        strncat(urlport, SPEECH_PORT, strlen(SPEECH_PORT));
+        char *urlport = NULL;
+        if (url != NULL) {
+            asprintf(&urlport, "%s", url);
+        } else {
+            asprintf(&urlport, "%s:%s", config.url, config.aport);
+        }
         if (0 > (ret = speech_recog(urlport, wavfile, &answer))) {
             fprintf(stderr, "Could not connect to host: %s\n", url);
             exit(EXIT_FAILURE);
         }
         if (question != NULL) free(question);
         if (q) question = strndup(answer, MAX_DATA_SIZE);
-        free(urlport);
     } 
 
     if (imgfile != NULL)
     {
         /* Append IMAGE matching PORT to url */
-        char *urlport = calloc((strlen(IMAGE_PORT) + strlen(url) + 2), sizeof(char));
-        strncat(urlport, url, strlen(url));
-        strncat(urlport, IMAGE_PORT, strlen(IMAGE_PORT));
+        char *urlport = NULL;
+        if (url != NULL) {
+            asprintf(&urlport, "%s", url);
+        } else {
+            asprintf(&urlport, "%s:%s", config.url, config.iport);
+        }
         if (0 > (ret = image_match(urlport, imgfile, &answer))) {
             fprintf(stderr, "Could not connect to host: %s\n", url);
             exit(EXIT_FAILURE);
         }
-        free(urlport);
     }
 
     if (question != NULL) {
         /* Append QUESTION port to url */
-        char *urlport = calloc((strlen(QUESTION_PORT) + strlen(url) + 2), sizeof(char));
-        strncat(urlport, url, strlen(url));
-        strncat(urlport, QUESTION_PORT, strlen(QUESTION_PORT));
+        char *urlport = NULL;
+        if (url != NULL) {
+            asprintf(&urlport, "%s", url);
+        } else {
+            asprintf(&urlport, "%s:%s", config.url, config.qport);
+        }
         if (0 > (ret = ask_question(urlport, question, &answer))) {
             fprintf(stderr, "Could not connect to host: %s\n", url);
             exit(EXIT_FAILURE);
         }
-        free(urlport);
     }
 
     if (verbose)
@@ -137,6 +162,7 @@ int main(int argc, char **argv)
     fprintf(stdout, "%s", answer);
 }
 
+/* user HELP */
 static void usage(int status)
 {
     int ok = status ? 0 : 1;
@@ -170,6 +196,7 @@ static void usage(int status)
     );
 }
 
+/* read QUESTION from stdin */
 static unsigned char *readStdin(int *length)
 {
     unsigned char *buffer;
@@ -195,3 +222,26 @@ static unsigned char *readStdin(int *length)
 
     return buffer;
 }
+
+/* Parse INI file handler */
+static int handler(void *user, const char *section, const char *name,
+                   const char *value)
+{
+    struct Config *pconfig = (struct Config*)user;
+    //configuration* pconfig = (configuration*)user;
+
+    #define MATCH(s, n) strcmp(section, s) == 0 && strcmp(name, n) == 0
+    if (MATCH("host", "url")) {
+        pconfig->url = strndup(value, MAX_DATA_SIZE);
+    } else if (MATCH("host", "question_port")) {
+        pconfig->qport = strndup(value, MAX_DATA_SIZE);
+    } else if (MATCH("host", "speech_recognition_port")) {
+        pconfig->aport = strndup(value, MAX_DATA_SIZE);
+    } else if (MATCH("host", "image_matching_port")) {
+        pconfig->iport = strndup(value, MAX_DATA_SIZE);
+    } else {
+        return 0;  /* unknown section/name, error */
+    }
+    return 1;
+}
+
