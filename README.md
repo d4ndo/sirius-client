@@ -10,13 +10,13 @@ Requires:
 Clone this repsitory: `git clone https://github.com/d4ndo/sirius-client.git`
 
 ```bash
-cd sirius-client
 mkdir build
 cd build
-cmake ../
+cmake ..
 make
 sudo make install
 ```
+Configuration file can be found at `~/.sirius.ini`
 
 # Getting started
 
@@ -29,18 +29,21 @@ echo What is the speed of light | sirius
 ```
 
 ## Speech recognition
--a : sirius will return the content of `speech.wav`
+-a : sirius will return the content of `question.wav`
 ```bash
-sirius -a speech.wav
+sirius -a question.wav
+what is the speed of light
 ```
 
 -q : sirius will try to answer `question.wav`
 ```bash
 sirius -qa question.wav
+299,792,458 meters per second
 ```
-Equivalent to :
+is equivalent to :
 ```bash
 sirius -a question.wav | sirius
+299,792,458 meters per second
 ```
 ## Image matching
 
