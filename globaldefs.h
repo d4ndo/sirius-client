@@ -5,7 +5,10 @@
 #define WAV_HEADER      "Content-Type: audio/vnd.wave; rate=16000"
 #define IMG_HEADER      "Content-Type: image/jpeg"
 #define QUERY           "?query=\0"
-#define VERSION         "0.0.3"
+#define VERSION         "0.0.4"
+#define DEBUG           (0)
+
+extern int verbose;
 
 struct MemoryStruct {
   char *memory;
