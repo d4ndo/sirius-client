@@ -13,7 +13,8 @@
 #include "image_matching.h"
 #include "globaldefs.h"
 
-static int verbose = 0;
+/* verbose is extern @ globaldefs.h */
+int verbose = 0;
 static const struct option options[] = {
 	{"help"         , no_argument      , NULL, 'h'},
         {"speechrecog"  , required_argument, NULL, 'a'},
@@ -100,7 +101,7 @@ int main(int argc, char **argv)
         length = strlen((char *)question);
     }
 
-    if (question == NULL && wavfile == NULL)
+    if (question == NULL && wavfile == NULL &&imgfile == NULL)
     {
         question = readStdin(&length);
     }
@@ -117,7 +118,7 @@ int main(int argc, char **argv)
             asprintf(&urlport, "%s:%s", config.url, config.aport);
         }
         if (0 > (ret = speech_recog(urlport, wavfile, &answer))) {
-            fprintf(stderr, "Could not connect to host: %s\n", url);
+            fprintf(stderr, "Could not connect to host: %s\n", urlport);
             exit(EXIT_FAILURE);
         }
         if (question != NULL) free(question);
@@ -134,7 +135,7 @@ int main(int argc, char **argv)
             asprintf(&urlport, "%s:%s", config.url, config.iport);
         }
         if (0 > (ret = image_match(urlport, imgfile, &answer))) {
-            fprintf(stderr, "Could not connect to host: %s\n", url);
+            fprintf(stderr, "Could not connect to host: %s\n", urlport);
             exit(EXIT_FAILURE);
         }
     }
@@ -148,7 +149,7 @@ int main(int argc, char **argv)
             asprintf(&urlport, "%s:%s", config.url, config.qport);
         }
         if (0 > (ret = ask_question(urlport, question, &answer))) {
-            fprintf(stderr, "Could not connect to host: %s\n", url);
+            fprintf(stderr, "Could not connect to host: %s\n", urlport);
             exit(EXIT_FAILURE);
         }
     }
@@ -244,4 +245,3 @@ static int handler(void *user, const char *section, const char *name,
     }
     return 1;
 }
-
