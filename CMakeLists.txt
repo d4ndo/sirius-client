@@ -10,8 +10,8 @@ include_directories(${CURL_INCLUDE_DIRS})
 
 #stndup warning
 set (CMAKE_C_FLAGS "-D_GNU_SOURCE")
-set(HEADER_FILES ../inih/ini.h ../pcrs/pcrs.h ../ask_question.h ../speech_recognition.h ../image_matching.h ../globaldefs.h)
-add_executable(sirius ../sirius.c ../inih/ini.c ../pcrs/pcrs.c ../ask_question.c ../speech_recognition.c ../image_matching.c ${HEADER_FILES})
+set(HEADER_FILES ../inih/ini.h ../pcrs/pcrs.h ../ask_question.h ../speech_recognition.h ../image_matching.h ../file2memory.h ../globaldefs.h)
+add_executable(sirius ../sirius.c ../inih/ini.c ../pcrs/pcrs.c ../ask_question.c ../speech_recognition.c ../image_matching.c ../file2memory.c ${HEADER_FILES})
 
 target_link_libraries (sirius pcre curl)
 install(FILES .sirius.ini DESTINATION ~ COMPONENT config)
