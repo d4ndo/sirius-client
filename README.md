@@ -29,7 +29,7 @@ echo What is the speed of light | sirius
 ```
 
 ## Speech recognition
-»Speaks with pyton host now«
+»Speaks with python host now«
 
 -a : sirius will return the content of `question.wav`
 ```bash
