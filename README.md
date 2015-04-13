@@ -55,3 +55,8 @@ sirius -a question.wav | sirius
 sirius -i towerOFpisa.jpg
 tower pisa
 ```
+
+Some batch stuff:
+```bash
+ls -1 *.jpg | while read line; do sirius -i $line; done;
+```
