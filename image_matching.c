@@ -16,21 +16,22 @@ int image_match(char *url, unsigned char *imgfile, char **answer) {
     chunk.memory = malloc(1);
     chunk.size = 0;
 
-    struct curl_httppost *formpost=NULL;
-    struct curl_httppost *lastptr=NULL;
-    struct curl_slist *headerlist=NULL;
+    struct curl_httppost *formpost = NULL;
+    struct curl_httppost *lastptr = NULL;
+    struct curl_slist *headerlist = NULL;
     static const char buf[] = IMG_HEADER;
+    headerlist = curl_slist_append(headerlist, buf);
 
     curl_formadd(&formpost,
                  &lastptr,
-                 CURLFORM_COPYNAME, "sendfile",
+                 CURLFORM_COPYNAME, "",
                  CURLFORM_FILE, imgfile,
+                 ////CURLFORM_CONTENTTYPE, "image/jpeg",
                  CURLFORM_END);
 
     curl_global_init(CURL_GLOBAL_ALL);
     curl_handle = curl_easy_init();
 
-    headerlist = curl_slist_append(headerlist, buf);
     curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, headerlist);
     curl_easy_setopt(curl_handle, CURLOPT_HTTPPOST, formpost);
     curl_easy_setopt(curl_handle, CURLOPT_URL, url);
@@ -47,6 +48,7 @@ int image_match(char *url, unsigned char *imgfile, char **answer) {
     }
 
     curl_easy_cleanup(curl_handle);
+    curl_slist_free_all(headerlist);
     curl_global_cleanup();
 
     *answer = chunk.memory;
