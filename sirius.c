@@ -9,8 +9,7 @@
 #include <errno.h>
 #include "./inih/ini.h"
 #include "ask_question.h"
-#include "speech_recognition.h"
-#include "image_matching.h"
+#include "post_file.h"
 #include "globaldefs.h"
 
 /* verbose is extern @ globaldefs.h */
@@ -117,7 +116,7 @@ int main(int argc, char **argv)
         } else {
             asprintf(&urlport, "%s:%s", config.url, config.aport);
         }
-        if (0 > (ret = speech_recog(urlport, wavfile, &answer))) {
+        if (0 > (ret = post_file(urlport, wavfile, &answer))) {
             fprintf(stderr, "Could not connect to host: %s\n", urlport);
             exit(EXIT_FAILURE);
         }
@@ -134,7 +133,7 @@ int main(int argc, char **argv)
         } else {
             asprintf(&urlport, "%s:%s", config.url, config.iport);
         }
-        if (0 > (ret = image_match(urlport, imgfile, &answer))) {
+        if (0 > (ret = post_file(urlport, imgfile, &answer))) {
             fprintf(stderr, "Could not connect to host: %s\n", urlport);
             exit(EXIT_FAILURE);
         }
