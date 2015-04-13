@@ -29,6 +29,7 @@ echo What is the speed of light | sirius
 ```
 
 ## Speech recognition
+»Speaks with pyton host now«
 -a : sirius will return the content of `question.wav`
 ```bash
 sirius -a question.wav
@@ -47,4 +48,9 @@ sirius -a question.wav | sirius
 ```
 ## Image matching
 
-In work
+-i: sirius will return information about the image
+
+```bash
+sirius -i towerOFpisa.jpg
+tower pisa
+```
