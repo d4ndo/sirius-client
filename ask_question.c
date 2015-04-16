@@ -27,7 +27,14 @@ int ask_question(char *url, unsigned char *question, char **answer) {
     curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
     res = curl_easy_perform(curl_handle);
 
-    if(res != CURLE_OK) {
+    if(res == CURLE_GOT_NOTHING) {
+        chunk.memory = realloc(chunk.memory, 2 * sizeof(char));
+        chunk.memory = strndup("\0", 2);
+        chunk.size = 0;
+    }
+
+    if(res != CURLE_OK && res != CURLE_GOT_NOTHING) {
+        fprintf(stderr, "curl error num %d\n", res);
         fprintf(stderr, "curl_easy_perform() failed: %s\n",
                         curl_easy_strerror(res));
         return -1;
@@ -35,6 +42,7 @@ int ask_question(char *url, unsigned char *question, char **answer) {
 
     curl_easy_cleanup(curl_handle);
     curl_global_cleanup();
+    free(modified_url);
 
     *answer = chunk.memory;
     return chunk.size;
@@ -45,15 +53,31 @@ static char *getRequest(char *url, unsigned char *question)
     char *buffer = NULL;
     char query[] = QUERY;
 
+    pcrs_job *job0;
     pcrs_job *job;
+    /* remove redundant whitespace */
+    char pattern0[] = "s/\\s+/ /g";
+    /* replace whitespace by %20 */
     char pattern[] = "s/\\s/%20/g";
     char *request_question;
     int err, linenum=0;
     size_t length;
 
+    if (NULL == (job0 = pcrs_compile_command(pattern0, &err)))
+    {
+        fprintf(stderr, "%s Compile error:  %s (%d).\n", pattern, pcrs_strerror(err), err);
+        exit(EXIT_FAILURE);
+    }
+
     if (NULL == (job = pcrs_compile_command(pattern, &err)))
     {
         fprintf(stderr, "%s Compile error:  %s (%d).\n", pattern, pcrs_strerror(err), err);
+        exit(EXIT_FAILURE);
+    }
+
+    if (0 > (err = pcrs_execute(job0, question, strlen(question), &request_question, &length)))
+    {
+        fprintf(stderr, "Exec error:  %s (%d)\n", pcrs_strerror(err), err);
         exit(EXIT_FAILURE);
     }
 
