@@ -16,7 +16,18 @@ cmake ..
 make
 sudo make install
 ```
-Configuration file can be found at `~/.sirius.ini`
+
+# Configuration
+
+The configuration file can be found at `~/.sirius.ini`
+
+```bash
+[host]                          ;host configuration
+url = localhost                 ;ip address or domain
+question_port = 8080            ;port for question daemon
+speech_recognition_port = 8081  ;port for speech recognition daemon
+image_matching_port = 8082      ;port for image matching daemon
+```
 
 # Getting started
 
