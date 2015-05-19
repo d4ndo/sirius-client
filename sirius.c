@@ -63,11 +63,7 @@ int main(int argc, char **argv)
     while((opt = getopt_long(argc, argv, optstring, options, &lindex)) != -1) {
         switch(opt) {
             case 'h':
-	        if(lindex == 0) {
-                    usage(EXIT_SUCCESS);
-	        } else {
-	            usage(EXIT_SUCCESS);
-		}
+	        usage(EXIT_SUCCESS);
 		exit(EXIT_SUCCESS);
                 break;
 	    case 'a':
@@ -100,7 +96,7 @@ int main(int argc, char **argv)
         length = strlen((char *)question);
     }
 
-    if (question == NULL && wavfile == NULL &&imgfile == NULL)
+    if (question == NULL && wavfile == NULL && imgfile == NULL)
     {
         question = readStdin(&length);
     }
@@ -173,6 +169,7 @@ static void usage(int status)
     "               If it is not specified, data will be\n"
     "               taken from standard input.\n\n"
     "  -a, --speechrecog [WAV FILE]\n"
+    "               Automatic speech recognition.\n"
     "               WAV_FILE some voice audio file for sirius to recognice.\n\n"
     "  -q, --question\n"
     "               WAV_FILE is a question.\n\n"
