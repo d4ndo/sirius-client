@@ -33,7 +33,12 @@ int post_file(char *url, unsigned char *file, char **answer) {
     char *binaryptr = NULL;
     size_t binarySize = 0;
 
-    if (0 > file2memory(&binaryptr, &binarySize, fd)) return -1;
+    if (0 > file2memory(&binaryptr, &binarySize, fd)) 
+    {
+        fclose(fd);
+        return -1;
+    }
+
     curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDS, binaryptr);
     curl_easy_setopt(curl_handle, CURLOPT_POSTFIELDSIZE, (curl_off_t)binarySize);
 
@@ -55,6 +60,7 @@ int post_file(char *url, unsigned char *file, char **answer) {
     if(res != CURLE_OK) {
         fprintf(stderr, "curl_easy_perform() failed: url %s\n",
                         curl_easy_strerror(res));
+        fclose(fd);
         return -1;
     }
 
@@ -72,6 +78,7 @@ int post_file(char *url, unsigned char *file, char **answer) {
     curl_global_cleanup();
     curl_slist_free_all(headers);
     free(binaryptr);
+    fclose(fd);
 
     *answer = chunk.memory;
     return chunk.size;
