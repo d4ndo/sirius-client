@@ -42,6 +42,9 @@ int file2memory(char **binaryptr, size_t *size, FILE *file)
         /* discard buffer if nothing was read */
         if(!nused) {
             free(buffer); /* no string */
+            *size = nused;
+            *binaryptr = buffer;
+            return -1;
         }
     }
     *size = nused;
