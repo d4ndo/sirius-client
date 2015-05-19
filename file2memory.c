@@ -43,7 +43,7 @@ int file2memory(char **binaryptr, size_t *size, FILE *file)
         if(!nused) {
             free(buffer); /* no string */
             *size = nused;
-            *binaryptr = buffer;
+            *binaryptr = NULL;
             return -1;
         }
     }
