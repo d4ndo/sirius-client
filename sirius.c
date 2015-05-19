@@ -52,7 +52,7 @@ int main(int argc, char **argv)
     char *ini = strndup(homedir, MAX_DATA_SIZE);
     asprintf(&ini, "%s/.sirius.ini", ini);
 
-    /* parse config INI fie */
+    /* parse config INI file */
     struct Config config;
 
     if (ini_parse(ini, handler, &config) < 0) {
