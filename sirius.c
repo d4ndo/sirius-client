@@ -50,7 +50,7 @@ int main(int argc, char **argv)
     }
     /* see 21st Century C from Ben Klemens about strings */
     char *ini = NULL;
-    char home = strndup(homedir, MAX_DATA_SIZE);
+    char *home = strndup(homedir, MAX_DATA_SIZE);
     asprintf(&ini, "%s/.sirius.ini", home);
     free(home);
 
