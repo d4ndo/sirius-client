@@ -229,7 +229,6 @@ static int handler(void *user, const char *section, const char *name,
                    const char *value)
 {
     struct Config *pconfig = (struct Config*)user;
-    //configuration* pconfig = (configuration*)user;
 
     #define MATCH(s, n) strcmp(section, s) == 0 && strcmp(name, n) == 0
     if (MATCH("host", "url")) {
