@@ -49,8 +49,10 @@ int main(int argc, char **argv)
         homedir = getpwuid(getuid())->pw_dir;
     }
     /* see 21st Century C from Ben Klemens about strings */
-    char *ini = strndup(homedir, MAX_DATA_SIZE);
-    asprintf(&ini, "%s/.sirius.ini", ini);
+    char *ini = NULL;
+    char home = strndup(homedir, MAX_DATA_SIZE);
+    asprintf(&ini, "%s/.sirius.ini", home);
+    free(home);
 
     /* parse config INI file */
     struct Config config;
@@ -59,7 +61,8 @@ int main(int argc, char **argv)
         fprintf(stderr, "Can't load %s *\n", ini);
         exit(EXIT_FAILURE);
     }
-   
+    free(ini);
+ 
     while((opt = getopt_long(argc, argv, optstring, options, &lindex)) != -1) {
         switch(opt) {
             case 'h':
@@ -156,6 +159,7 @@ int main(int argc, char **argv)
     }
 
     fprintf(stdout, "%s", answer);
+    free(url);
 }
 
 /* user HELP */
