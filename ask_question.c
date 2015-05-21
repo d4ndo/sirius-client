@@ -92,9 +92,14 @@ static char *prepare_url(char *url, char *question)
     }
 
     char *buffer = NULL;
-    asprintf(&buffer, "%s%s%s", url, QUERY, request_question);
-    free(request_question);
+    if (0 > asprintf(&buffer, "%s%s%s", url, QUERY, request_question))
+    {
+        free(request_question);
+        fprintf(stderr, "Allocation error @ ask_question.\n");
+        exit(EXIT_FAILURE);
+    }
 
+    free(request_question);
     return buffer;
 }
 
