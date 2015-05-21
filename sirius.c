@@ -27,7 +27,7 @@ static const struct option options[] = {
 
 static char *optstring = "ha:qi:u:v";
 static void usage(int status);
-static unsigned char *readStdin(int *length);
+static char *readStdin(int *length);
 static int handler(void *user, const char *section, 
                    const char *name, const char *value);
 
@@ -40,7 +40,7 @@ int main(int argc, char **argv)
     int q = 0;
     char *url = NULL;
     char *answer = NULL;
-    unsigned char *question = NULL;
+    char *question = NULL;
     int length = 0;
 
     /* get HOME directory from environment */
@@ -95,7 +95,7 @@ int main(int argc, char **argv)
     }
 
     if (optind < argc) {
-        question = (unsigned char *)argv[optind];
+        question = (char *)argv[optind];
         length = strlen((char *)question);
     }
 
@@ -198,12 +198,12 @@ static void usage(int status)
 }
 
 /* read QUESTION from stdin */
-static unsigned char *readStdin(int *length)
+static char *readStdin(int *length)
 {
-    unsigned char *buffer;
+    char *buffer;
     int ret;
 
-    buffer = (unsigned char *)malloc(MAX_DATA_SIZE + 1);
+    buffer = (char *)malloc(MAX_DATA_SIZE + 1);
     if(buffer == NULL) {
         fprintf(stderr, "Memory allocation failed.\n");
         exit(EXIT_FAILURE);
