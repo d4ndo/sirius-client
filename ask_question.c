@@ -6,22 +6,27 @@
 #include "./pcrs/pcrs.h"
 #include "globaldefs.h"
 
-int ask_question(char *url, unsigned char *question, char **answer) {
+int ask_question(char *url, char *question, char **answer) {
 
     CURL *curl_handle;
     CURLcode res;
-
+   
+    curl_global_init(CURL_GLOBAL_ALL);
+    curl_handle = curl_easy_init();
+ 
+    /* Prepare GET request
+     * Must be in this form:
+     * mySiriusHost.com?query=What%20is%20the%20speed%20of%20light
+     */ 
     char *modified_url = NULL;
-    struct MemoryStruct chunk;
+    modified_url = prepare_url(url, question);
+    curl_easy_setopt(curl_handle, CURLOPT_URL, modified_url);
+    free(modified_url);
 
+    struct MemoryStruct chunk;
     chunk.memory = malloc(1);
     chunk.size = 0;
 
-    modified_url = getRequest(url, question);
-
-    curl_global_init(CURL_GLOBAL_ALL);
-    curl_handle = curl_easy_init();
-    curl_easy_setopt(curl_handle, CURLOPT_URL, modified_url);
     curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
     curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&chunk);
     curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
@@ -42,38 +47,37 @@ int ask_question(char *url, unsigned char *question, char **answer) {
 
     curl_easy_cleanup(curl_handle);
     curl_global_cleanup();
-    free(modified_url);
 
     *answer = chunk.memory;
     return chunk.size;
 }
 
-static char *getRequest(char *url, unsigned char *question)
+char *prepare_url(char *url, char *question)
 {
-    char *buffer = NULL;
-    char query[] = QUERY;
+    int err = 0;
 
-    pcrs_job *job0;
-    pcrs_job *job;
     /* remove redundant whitespace */
+    pcrs_job *job0 = NULL;
     char pattern0[] = "s/\\s+/ /g";
-    /* replace whitespace by %20 */
-    char pattern[] = "s/\\s/%20/g";
-    char *request_question;
-    int err, linenum=0;
-    size_t length;
 
     if (NULL == (job0 = pcrs_compile_command(pattern0, &err)))
     {
-        fprintf(stderr, "%s Compile error:  %s (%d).\n", pattern, pcrs_strerror(err), err);
+        fprintf(stderr, "%s Compile error:  %s (%d).\n", pattern0, pcrs_strerror(err), err);
         exit(EXIT_FAILURE);
     }
+
+    /* replace whitespace by %20 */
+    pcrs_job *job = NULL;
+    char pattern[] = "s/\\s/%20/g";
 
     if (NULL == (job = pcrs_compile_command(pattern, &err)))
     {
         fprintf(stderr, "%s Compile error:  %s (%d).\n", pattern, pcrs_strerror(err), err);
         exit(EXIT_FAILURE);
     }
+
+    size_t length;
+    char *request_question = NULL;
 
     if (0 > (err = pcrs_execute(job0, question, strlen(question), &request_question, &length)))
     {
@@ -87,15 +91,18 @@ static char *getRequest(char *url, unsigned char *question)
         exit(EXIT_FAILURE);
     }
 
-    buffer = (char *)malloc(8 * MAX_DATA_SIZE);
+    char *buffer = (char *)malloc(8 * MAX_DATA_SIZE);
     if(buffer == NULL) {
         fprintf(stderr, "Memory allocation failed.\n");
         exit(EXIT_FAILURE);
     }
 
     strncpy(buffer, url, MAX_DATA_SIZE);
+
+    char query[] = QUERY;
     strncat(buffer, query, strlen(query));
     strncat(buffer, request_question, (3 * MAX_DATA_SIZE));
+    free(request_question);
 
     return buffer;
 }
