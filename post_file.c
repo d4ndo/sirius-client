@@ -14,7 +14,7 @@
  * --data-binary @what.is.the.capital.of.italy.wav localhost:8081
  * NO multipart/formdata  HTTP  POST
  */
-int post_file(char *url, unsigned char *file, char **answer) {
+int post_file(const char *url, const char *file, char **answer) {
 
     CURL *curl_handle;
     CURLcode res;
