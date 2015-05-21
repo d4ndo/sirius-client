@@ -91,17 +91,8 @@ static char *prepare_url(char *url, char *question)
         exit(EXIT_FAILURE);
     }
 
-    char *buffer = (char *)malloc(8 * MAX_DATA_SIZE);
-    if(buffer == NULL) {
-        fprintf(stderr, "Memory allocation failed.\n");
-        exit(EXIT_FAILURE);
-    }
-
-    strncpy(buffer, url, MAX_DATA_SIZE);
-
-    char query[] = QUERY;
-    strncat(buffer, query, strlen(query));
-    strncat(buffer, request_question, (3 * MAX_DATA_SIZE));
+    char *buffer = NULL;
+    asprintf(&buffer, "%s%s%s", url, QUERY, request_question);
     free(request_question);
 
     return buffer;
