@@ -4,11 +4,11 @@
 
 int file2memory(char **binaryptr, size_t *size, FILE *file)
 {
-    char *newbuf;
+    char *newbuf = NULL;
     char *buffer = NULL;
     size_t alloc = 512;
     size_t nused = 0;
-    size_t nread;
+    size_t nread = 0;
 
     if(file) {
         do {
