@@ -52,7 +52,7 @@ int ask_question(char *url, char *question, char **answer) {
     return chunk.size;
 }
 
-char *prepare_url(char *url, char *question)
+static char *prepare_url(char *url, char *question)
 {
     int err = 0;
 
