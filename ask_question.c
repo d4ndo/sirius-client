@@ -6,7 +6,7 @@
 #include "./pcrs/pcrs.h"
 #include "globaldefs.h"
 
-int ask_question(char *url, char *question, char **answer) {
+int ask_question(const char *url, const char *question, char **answer) {
 
     CURL *curl_handle;
     CURLcode res;
@@ -52,9 +52,12 @@ int ask_question(char *url, char *question, char **answer) {
     return chunk.size;
 }
 
-static char *prepare_url(char *url, char *question)
+static char *prepare_url(const char *url, const char *question)
 {
     int err = 0;
+    size_t length;
+    char *request_question = NULL;
+    char *myquestion = strndup(question, MAX_DATA_SIZE);    
 
     /* remove redundant whitespace */
     pcrs_job *job0 = NULL;
@@ -66,6 +69,13 @@ static char *prepare_url(char *url, char *question)
         exit(EXIT_FAILURE);
     }
 
+    if (0 > (err = pcrs_execute(job0, myquestion, strlen(myquestion), &request_question, &length)))
+    {
+        fprintf(stderr, "Exec error:  %s (%d)\n", pcrs_strerror(err), err);
+        exit(EXIT_FAILURE);
+    }
+    free(job0);
+
     /* replace whitespace by %20 */
     pcrs_job *job = NULL;
     char pattern[] = "s/\\s/%20/g";
@@ -76,21 +86,14 @@ static char *prepare_url(char *url, char *question)
         exit(EXIT_FAILURE);
     }
 
-    size_t length;
-    char *request_question = NULL;
-
-    if (0 > (err = pcrs_execute(job0, question, strlen(question), &request_question, &length)))
+    if (0 > (err = pcrs_execute(job, myquestion, strlen(myquestion), &request_question, &length)))
     {
         fprintf(stderr, "Exec error:  %s (%d)\n", pcrs_strerror(err), err);
         exit(EXIT_FAILURE);
     }
+    free(job);
 
-    if (0 > (err = pcrs_execute(job, question, strlen(question), &request_question, &length)))
-    {
-        fprintf(stderr, "Exec error:  %s (%d)\n", pcrs_strerror(err), err);
-        exit(EXIT_FAILURE);
-    }
-
+    /* build new GET Request string and return it */
     char *buffer = NULL;
     if (0 > asprintf(&buffer, "%s%s%s", url, QUERY, request_question))
     {
@@ -98,8 +101,8 @@ static char *prepare_url(char *url, char *question)
         fprintf(stderr, "Allocation error @ prepar_url.\n");
         exit(EXIT_FAILURE);
     }
-
     free(request_question);
+
     return buffer;
 }
 
