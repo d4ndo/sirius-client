@@ -110,16 +110,27 @@ int main(int argc, char **argv)
     {
         /* Append SPEECH port to url */
         char *urlport = NULL;
+
         if (url != NULL) {
             asprintf(&urlport, "%s", url);
         } else {
             asprintf(&urlport, "%s:%s", config.url, config.aport);
         }
+
         if (0 > (ret = post_file(urlport, wavfile, &answer))) {
             fprintf(stderr, "Could not connect to host: %s\n", urlport);
             exit(EXIT_FAILURE);
         }
-        if (question != NULL) free(question);
+
+        /* 
+         * reset. Using free to avoid memory leak 
+         * and set back to NULL, because question is still being used 
+         */
+        if (question != NULL) {
+            free(question); 
+            question = NULL;
+        }
+
         if (q) question = strndup(answer, MAX_DATA_SIZE);
     } 
 
