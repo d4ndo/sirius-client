@@ -32,10 +32,12 @@
 
 /* verbose is extern @ globaldefs.h */
 int verbose = 0;
+
 static const struct option options[] = {
 	{"help"         , no_argument      , NULL, 'h'},
         {"speechrecog"  , required_argument, NULL, 'a'},
         {"question"     , no_argument      , NULL, 'q'},
+        {"tableflip"    , no_argument      , NULL, 't'},
         {"imagematch"   , required_argument, NULL, 'i'},
         {"url"          , required_argument, NULL, 'u'},
         {"version"      , no_argument      , NULL, 'v'},
@@ -43,7 +45,7 @@ static const struct option options[] = {
 	{NULL, 0, NULL, 0}
 };
 
-static char *optstring = "ha:qi:u:v";
+static char *optstring = "ha:qti:u:v";
 static void usage(int status);
 static char *readStdin(int *length);
 static int handler(void *user, const char *section, 
@@ -93,6 +95,9 @@ int main(int argc, char **argv)
             case 'q':
                 q = 1;
                 break;
+            case 't':
+                fprintf(stdout, "(╯°□°）╯︵ ┻━┻\n"); 
+                exit(EXIT_SUCCESS);
 	    case 'i':
                 imgfile = strndup(optarg, MAX_DATA_SIZE);
                 break;
@@ -186,7 +191,6 @@ int main(int argc, char **argv)
         fprintf(stderr, "%s\n", question);
         fprintf(stderr, "%d bytes retrieved\n", ret);
     }
-
     fprintf(stdout, "%s", answer);
     free(url);
 }
