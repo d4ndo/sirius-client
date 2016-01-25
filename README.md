@@ -5,6 +5,8 @@
 </a>
 
 A unix command like sirius client
+
+Deprecated. Whole design of sirius changed. Now called lucida (https://github.com/claritylab/lucida)
 # Installing
 
 Requires:
